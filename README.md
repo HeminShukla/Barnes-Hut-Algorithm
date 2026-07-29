@@ -56,7 +56,7 @@ This value is compared against a threshold parameter **θ (theta)**.
 
 If
 
-***s / d***
+***s / d < θ***
 
 the node is considered sufficiently far away and its entire mass is approximated by a single force calculation.
 
