@@ -45,9 +45,7 @@ This dramatically reduces the number of force calculations compared to evaluatin
 
 Whether a node can be approximated as a single body is determined using the ratio
 
-\[
-\frac{s}{d}
-\]
+***s / d***
 
 where
 
@@ -58,9 +56,7 @@ This value is compared against a threshold parameter **θ (theta)**.
 
 If
 
-\[
-\frac{s}{d} < \theta
-\]
+***s / d***
 
 the node is considered sufficiently far away and its entire mass is approximated by a single force calculation.
 
@@ -90,31 +86,6 @@ Typical values range between **0.5 and 1.0** depending on the required precision
 | Barnes–Hut | O(N log N) (average case) |
 
 The Barnes–Hut algorithm becomes significantly more efficient as the number of bodies increases.
-
----
-
-## Applications
-
-- Astrophysical simulations
-- Galaxy formation
-- Planetary systems
-- Molecular dynamics
-- Particle simulations
-- Electrostatic simulations
-
----
-
-## Future Improvements
-
-Possible extensions include:
-
-- Octree implementation for 3D simulations
-- Parallel force computation
-- GPU acceleration
-- Adaptive time stepping
-- Collision detection and merging
-- Improved numerical integration methods
-
 ---
 
 ## References
