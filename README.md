@@ -91,3 +91,5 @@ The Barnes–Hut algorithm becomes significantly more efficient as the number of
 ## References
 
 Barnes, J., & Hut, P. (1986). *A Hierarchical O(N log N) Force-Calculation Algorithm*. Nature, 324, 446–449.
+https://arborjs.org/docs/barnes-hut
+https://jheer.github.io/barnes-hut/
