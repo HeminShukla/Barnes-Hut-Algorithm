@@ -1,4 +1,5 @@
 import random
+import math
 
 class Body():
     def __init__(self, x, y, mass):
@@ -7,7 +8,7 @@ class Body():
         self.mass = mass
 
 class Node():
-    def __init__(self, length, left, top, bodies, totalMass=0, centreOfMass=(0, 0)):
+    def __init__(self, length, left, top, bodies: list[Body], totalMass=0, centreOfMass=(0, 0)):
         """Class representing nodes. 
         Recursively creates children nodes from the initial node until all required nodes are created. 
         """
@@ -63,3 +64,24 @@ def addBodies(numberOfBodies: int, height: int, width: int) -> list[Body]:
 
     return allBodies
 
+allNodes = [] #Global variable to store all nodes in the quadtree for drawing purposes
+theta = 1 #Global variable to store the value of theta, which will be updated by the user through the main program
+def generateQuadrants(currentNode: Node, currentPos: tuple[int, int]) -> list[Node]:
+    """
+    Recursive function which adds all nodes to the global variable allNodes to be drawn on.
+    """
+    currentNode.update()
+    if currentNode.children != [] and calculateQuotient(currentNode, currentPos) > theta:
+        for child in currentNode.children:
+            allNodes.append(child)
+            generateQuadrants(child, currentPos)
+
+
+def calculateQuotient(currentNode: Node, currentPos: tuple[int, int]) -> float:
+    """
+    Function that calculates the quotient s/d for a particular node to determine if its children need to be examined.
+    """
+    s = currentNode.length
+    d = math.sqrt((currentPos[0] - currentNode.centreOfMass[0]) ** 2 + (currentPos[1] - currentNode.centreOfMass[1]) ** 2)
+    return s / d
+    
