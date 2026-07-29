@@ -82,6 +82,11 @@ def calculateQuotient(currentNode: Node, currentPos: tuple[int, int]) -> float:
     Function that calculates the quotient s/d for a particular node to determine if its children need to be examined.
     """
     s = currentNode.length
-    d = math.sqrt((currentPos[0] - currentNode.centreOfMass[0]) ** 2 + (currentPos[1] - currentNode.centreOfMass[1]) ** 2)
+    d = math.hypot(currentNode.centreOfMass[0] - currentPos[0], currentNode.centreOfMass[1] - currentPos[1])
     return s / d
-    
+
+
+def calculateForce(currentNode: Node, body: Body) -> tuple[float, float]:
+    distanceToSource = math.hypot(body.x - currentNode.centreOfMass[0], body.y - currentNode.centreOfMass[1])
+    force = 6.67 * (10 ** -11) * body.mass * currentNode.totalMass / (distanceToSource ** 2)
+    return force
