@@ -21,7 +21,7 @@ font = pygame.font.SysFont(None, 50)
 
 #Set up all of the buttons to toggle different features on and off
 #First we will set up the subprograms and global variables that they will edit
-treeToggle, netForceToggle, allForcesToggle = False, False, False
+treeToggle, netForceToggle, allForcesToggle, centresOfMassToggle = False, False, False, False
 
 def toggleTree():
     global treeToggle
@@ -35,11 +35,14 @@ def toggleAllForces():
      global allForcesToggle
      allForcesToggle = not allForcesToggle
 
-
+def toggleCentresOfMass():
+    global centresOfMassToggle
+    centresOfMassToggle = not centresOfMassToggle
 
 quadTreeButton = Button(screen, 900, 400, 400, 50, text="Show Quadtree", fontSize=50, inactiveColour=(128, 128, 128), hoverColour=(150, 150, 150), pressedColour=(100, 100, 100), onClick=toggleTree)
 netForceButton = Button(screen, 900, 500, 400, 50, text="Show Net Force", fontSize=50, inactiveColour=(128, 128, 128), hoverColour=(150, 150, 150), pressedColour=(100, 100, 100), onClick=toggleNetForce)
 allForcesButton = Button(screen, 900, 600, 400, 50, text="Show All Forces", fontSize=50, inactiveColour=(128, 128, 128), hoverColour=(150, 150, 150), pressedColour=(100, 100, 100), onClick=toggleAllForces)
+centresOfMassButton = Button(screen, 900, 700, 400, 50, text="Show Centres of Mass", fontSize=45, inactiveColour=(128, 128, 128), hoverColour=(150, 150, 150), pressedColour=(100, 100, 100), onClick=toggleCentresOfMass)
 
 #First we will add all the bodies
 allBodies = simulation.addBodies(100, 800, 800)
@@ -67,6 +70,7 @@ while running:
 
     #Draw the main body on whom the net force needs to be calculated
     currentMousePosition = pygame.mouse.get_pos()
+    mainBody.x, mainBody.y = currentMousePosition[0], currentMousePosition[1]
     pygame.draw.circle(screen, (255, 0, 0), currentMousePosition, mainBody.mass)
 
     #Drawing all of the quadrants in the quadtree onto the graphic
@@ -79,23 +83,32 @@ while running:
     #Drawing all the individual bodies in
     for body in allBodies:
             pygame.draw.circle(screen, (211, 211, 211), (body.x, body.y), int(body.mass * 10))
-            pygame.draw.circle(screen, (255, 100, 100), (body.x, body.y), int(body.mass * 9))
+            pygame.draw.circle(screen, (255, 255, 255), (body.x, body.y), int(body.mass * 9))
 
     totalForce = (0, 0) #This will be a tuple, representing the total force in the x and y direction as a vector
     for sourceOfForce in simulation.allNodes:
         #Each value in allNodes shows a source of a force that will be acting on the main body
         #So we want to constantly draw a line from that point where the force is acting to the main body
-        currentForce = simulation.calculateForce(sourceOfForce, mainBody) * 10 ** 15 #We multiply by 10^15 almost arbitratily, to ensure it looks visually pleasing 
-        angle = math.atan2(sourceOfForce.centreOfMass[1] - currentMousePosition[1], sourceOfForce.centreOfMass[0]-currentMousePosition[0])
-        distance = math.hypot(sourceOfForce.centreOfMass[0] - currentMousePosition[0], sourceOfForce.centreOfMass[1]-currentMousePosition[1])
-        totalForce = (totalForce[0] + distance * math.cos(angle), totalForce[1] + math.sin(angle))
-        if not allForcesToggle:
-            pygame.draw.line(screen, (64, 64, 64),currentMousePosition, sourceOfForce.centreOfMass)
-        #drawDottedLine(currentMousePosition, sourceOfForce.centreOfMass, (64, 64, 64), 1, int(currentForce))
+        try:
+            if not centresOfMassToggle:
+                pygame.draw.circle(
+                                    screen,
+                                    (0, 255, 0),
+                                    (int(sourceOfForce.centreOfMass[0]), int(sourceOfForce.centreOfMass[1])),
+                                    3
+                                )
+            currentForce = simulation.calculateForce(sourceOfForce, mainBody) * 10 ** 13 #We multiply by 10^13 almost arbitratily, to ensure it is visible to the user 
+            angle = math.atan2(sourceOfForce.centreOfMass[1] - currentMousePosition[1], sourceOfForce.centreOfMass[0]-currentMousePosition[0])
+            distance = math.hypot(sourceOfForce.centreOfMass[0] - currentMousePosition[0], sourceOfForce.centreOfMass[1]-currentMousePosition[1])
+            totalForce = (totalForce[0] + currentForce * math.cos(angle), totalForce[1] + currentForce * math.sin(angle))
+            if not allForcesToggle:
+                pygame.draw.line(screen, (64, 64, 150),currentMousePosition, sourceOfForce.centreOfMass)
+        except MemoryError:
+            pass #This is because we need to multiple by 10^13 to make the forces visible, but this can cause a memory error if the force is too large
 
     #Now to draw the total force acting on the main body
     #This will be an arrow, and will be a different colour to differentiate it from the other lines showing forces that are influencing the main body
-    tip = (currentMousePosition[0] + totalForce[0] / 100, currentMousePosition[1] + totalForce[1])
+    tip = (currentMousePosition[0] + totalForce[0], currentMousePosition[1] + totalForce[1])
     if not netForceToggle:
         pygame.draw.line(screen, (255, 0, 0), currentMousePosition, tip)
         angle = math.atan2(tip[1] - currentMousePosition[1], tip[0]-currentMousePosition[0])
