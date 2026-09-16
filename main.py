@@ -20,7 +20,7 @@ font = pygame.font.SysFont(None, 50)
 
 #Set up all of the buttons to toggle different features on and off
 #First we will set up the subprograms and global variables that they will edit
-treeToggle, netForceToggle, allForcesToggle, centresOfMassToggle = False, False, False, False
+treeToggle, netForceToggle, allForcesToggle, centresOfMassToggle = True, True, True, True 
 
 def toggleTree():
     global treeToggle
@@ -44,8 +44,8 @@ allForcesButton = Button(screen, 900, 600, 400, 50, text="Show All Forces", font
 centresOfMassButton = Button(screen, 900, 700, 400, 50, text="Show Centres of Mass", fontSize=45, inactiveColour=(128, 128, 128), hoverColour=(150, 150, 150), pressedColour=(100, 100, 100), onClick=toggleCentresOfMass)
 
 #First we will add all the bodies
-allBodies = simulation.addBodies(100, 800, 800)
-#allBodies = simulation.addCluster(50, 800, 800, 5, 10)
+#allBodies = simulation.addBodies(2, 800, 800)
+allBodies = simulation.addCluster(50, 800, 800, 5, 50)
 mainBody = simulation.Body(400, 400, 2) #This is the main body on whom the net force needs to be calculated
 
 running = True
@@ -88,10 +88,8 @@ while running:
     #Calculating the total force acting on the main body, and drawing lines to show the forces acting on it
     totalForce = (0, 0) #This will be a tuple, representing the total force in the x and y direction as a vector
 
-    forceOnBodies = {} #This will be a dictionary mapping each body to the total force acting on it
-    for currentBody in allBodies:
-        forceOnBodies[currentBody] = (0, 0) #This will be a tuple, representing the total force in the x and y direction as a vector
-        
+    forceOnBodies = {body: (0, 0) for body in allBodies} #This will be a dictionary mapping each body to the total force acting on it
+
     for sourceOfForce in simulation.allNodes:
         #Each value in allNodes shows a source of a force that will be acting on the main body
         #So we want to constantly draw a line from that point where the force is acting to the main body
@@ -119,11 +117,12 @@ while running:
     for currentBody in allBodies:
         if not simulation.outOfBounds(currentBody, 800, 800): 
             #We do not want to calculate the force acting on a body from itself, since this is not physically possible
+            simulation.allNodes = [rootNode]
             simulation.generateQuadrants(rootNode, (currentBody.x, currentBody.y))
             for sourceOfForce in simulation.allNodes:
                 if currentBody not in sourceOfForce.bodies:
                     distanceOnBody = math.hypot(sourceOfForce.centreOfMass[0] - currentBody.x, sourceOfForce.centreOfMass[1]-currentBody.y)
-                    if distanceOnBody > 0.3: #This is because if they get too close, they will simply collide, we can treat this as them merging them in a sense, since they will now just not react  to each other and stay close
+                    if distanceOnBody > currentBody.mass * 10: #This is because if they get too close, they will simply collide, we can treat this as them merging them in a sense, since they will now just not react  to each other and stay close
                         forceOnBody = simulation.calculateForce(sourceOfForce, currentBody) #We do not times this by 10^13, since we want to see the actual forces acting on the bodies, not just a visual representation of them
                         angleOnBody = math.atan2(sourceOfForce.centreOfMass[1] - currentBody.y, sourceOfForce.centreOfMass[0]-currentBody.x)
                         totalForceOnBody = (forceOnBody * math.cos(angleOnBody), forceOnBody * math.sin(angleOnBody))
@@ -141,28 +140,7 @@ while running:
         body.x += body.speed[0]
         body.y += body.speed[1]
         
-    
 
-    """for body in allBodies:
-        found = False
-        for node in simulation.allNodes:
-            if body in node.bodies:
-                found = True
-                break
-        if found == False:
-            pygame.draw.circle(screen, (255, 0, 0), (body.x, body.y), int(body.mass * 10))
-            pygame.draw.circle(screen, (255, 255, 255), (body.x, body.y), int(body.mass * 9))
-
-    allNodeCheck = [rootNode]
-    simulation.allNodeCheckFunc(rootNode, allNodeCheck)
-    neglectedNodes = (neglectedNode for neglectedNode in allNodeCheck if neglectedNode not in simulation.allNodes)
-    for neglectedNode in neglectedNodes:
-        pygame.draw.circle(
-                            screen,
-                            (255, 0, 0),
-                            (int(neglectedNode.centreOfMass[0]+1), int(neglectedNode.centreOfMass[1]+1)),
-                            3
-                        )"""
     
     #Now to draw the total force acting on the main body
     #This will be an arrow, and will be a different colour to differentiate it from the other lines showing forces that are influencing the main body
